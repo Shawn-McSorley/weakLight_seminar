@@ -14652,8 +14652,9 @@ $$ \bar{I} = \bar{I}_{LO} + \bar I_{sig} + 2\sqrt{\bar{I}_{LO}\bar{I}_{sig}}cos(
 <li>Phase noise: The noise that affects the phase of our signal of interest.</li>
 </ul>
 <p>A simplified model of the noise sources is given by:</p>
-$$v(t)=A\cos(\omega t + \theta + \bar{\phi}(t)) + \bar{A}(t)$$<p>where $v(t)$ is the voltage of the signal input to our phase measurement device, $A$ is the amplitude of the signal, $\omega$ is the frequency of the signal, $\theta$ is the phase of the signal, $\bar{\phi}(t)$ is the phase noise, and $\bar{A}(t)$ is the amplitude noise. We can usually lump the phase we're interested in measuring, and its noise together.</p>
-<p>A phase-locked loop (PLL) can be used to measure the phase of the signal, however, care must be taken in considering how $\bar{\phi}(t)$ and $\bar{A}(t)$ couple in to our measurement. To illustrate this, consider the diagram:</p>
+$$v(t)=A\cos(\omega t + \theta(t) + \bar{\epsilon}(t)) + \bar{A}(t)$$<p>where $v(t)$ is the voltage of the signal input to our phase measurement device, $A$ is the amplitude of the signal, $\omega$ is the frequency of the signal, $\theta$ is the deterministic phase of the signal we want to measure, $\bar{\epsilon}(t)$ is the phase noise, and $\bar{A}(t)$ is the amplitude noise. We can usually lump the phase we're interested in measuring, and its noise together.</p>
+<p>A phase-locked loop (PLL) can be used to measure the phase of the signal. For the following, it is useful to think of the PLL as a device that outputs the phase $\phi(t)$, where,</p>
+$$ \phi(t) = \theta(t) + \bar{\epsilon}(t) + k \bar{A}(t). $$<p>Here, $\phi(t)$ is the total phase of the signal, $\theta(t)$ is the signal we want to measure, $\bar\epsilon$ is the phase noise, and $k\bar{A}(t)$ is the amplitude noise. Here, $k$, is just to show that the amplitude noise couples into our measurement. We will work out very shortly how it does so.</p>
 
 </div>
 </div>
@@ -14670,7 +14671,7 @@ $$v(t)=A\cos(\omega t + \theta + \bar{\phi}(t)) + \bar{A}(t)$$<p>where $v(t)$ is
 
 
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
-<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/phasor.jpg' style='width:30.0%'/></figure></div>
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/phasor.png' style='width:30.0%'/></figure></div>
 </div>
 
 </div>
@@ -14680,8 +14681,8 @@ $$v(t)=A\cos(\omega t + \theta + \bar{\phi}(t)) + \bar{A}(t)$$<p>where $v(t)$ is
 
 
 <div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
-<p><strong><font size='5'><center>Figure 4:</strong> Phasor diagram of the noisy measurement signal. $\omega$, the rate at which our phasor spins; $\bar\phi$ the phase offset of the noisy measurement signal; $A$, the amplitude (magnitude) of the measurement signal; 
-$\bar A$, the additive amplitude noise in the measurement signal.</p>
+<p><strong><font size='5'><center>Figure 2:</strong> Phasor diagram of the noisy measurement signal. $\omega$, the rate at which our phasor spins; $\bar\phi$ the phase that our PLL will measure; $A$, the amplitude (magnitude) of the measurement signal; 
+$\bar A$, the additive amplitude noise in the measurement signal; $\bar\epsilon$, the phase noise of the signal.</p>
 
 </div>
 
@@ -14698,7 +14699,7 @@ $\bar A$, the additive amplitude noise in the measurement signal.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>To avoid confusion, the phasor model can be separated into its time varying component and its phase component (ignoring additive noise):</p>
-$$ v(t) = \Re(Ae^{j\omega t}e^{j\phi})$$<p>and the PLL measurement will be given by:</p>
+$$ v(t) = \Re(Ae^{j\omega t}e^{j\phi})$$<p>and the ideal PLL measurement will be given by:</p>
 $$ v(t) = \text{Arg}(Ae^{j\omega t}e^{j\phi}\times e^{-j\omega t})=\phi$$<p>There are a few ways to figure out how $\bar A$ will couple into the phase measurement from the PLL. I'm going to run through a derivation that uses the Hilbert transform, as it is essentially a mathematical description of the phasor diagram above. The goal is to find how the noise output, $S_{PLL}(f)$, depends on the phase noise $S_{\bar\phi}(f)$ and the additive noise $S_{\bar A}(f)$, where $S(f)$ is the noise power spectral density.</p>
 <p>While not technically defined, this derivation will use:</p>
 $$S(f)=\lim_{T\rightarrow\infty}\frac{1}{T}|\mathcal{F}(x(t))|^2$$<p>where $\mathcal{F}$ is the Fourier transform, and $x(t)$ is the signal of interest. A more rigorous approach would be to consider the auto-correlation of our signals.</p>
@@ -14739,6 +14740,398 @@ $$ \mathcal{F}(\bar{\phi}(t)) = \mathcal{F}\{\frac{\mathcal{H}\{\bar{A}(t)\}}{A}
 $$ \mathcal{F}(\bar{\phi}(t)) = \frac{1}{2A}[-j\bm{A}(f-f_i)-j\bm{A}(f+f_i)-j\bm{A}(f-f_i)+j\bm{A}(f+f_i)]=\frac{-1j}{A}\bm{A}(f-f_i) $$<p>Jumping a step, we can write the power spectral density of the phase noise as,</p>
 $$ S_{\phi, A}(f) = \frac{1}{A^2} S_{\bar A}(f-f_i)$$<p>For our case, we only want to consider the single sided PSD, so we can write,</p>
 $$ S_{\phi, A}(f) = \frac{2}{A^2} S_{\bar A}(f)$$<p><strong>Discuss the implications of this equation! Think about SNR.</strong></p>
+
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Additive-Noise-and-Phase-Noise">Additive Noise and Phase Noise<a class="anchor-link" href="#Additive-Noise-and-Phase-Noise">&#182;</a></h1><p>In the previous section, we derived the power spectral density of the phase noise due to additive noise. We found that the power spectral density of the phase noise due to additive noise is given by:</p>
+$$ S_{\phi, A}(f) = \frac{2}{A^2} S_{\bar A}(f)$$<p>This equation tells us that the power spectral density of the phase noise due to additive noise is inversely proportional to the square of the amplitude of the signal. This means that the phase noise due to additive noise will be more significant for weaker signals.</p>
+<p>Before we knuckle in to weak-light tracking, I think it will be useful to:</p>
+<ul>
+<li>Verify how additive noise and phase noise can couple in to a phase measurement</li>
+<li>Understand how the bandwidth of a measurement signal can change the impact of additive noise on our bandwidth</li>
+</ul>
+<p>Recall the <strong>fundamental equation</strong>:</p>
+$$ \sigma_{\phi}^2=\int^B_0 S_{\phi}(f) df$$<p>where $\sigma_{\phi}$ is the variance of the measured phase, $S_{\phi}=S_{\epsilon}(f)+\frac{2}{A^2}S_{\bar A}(f)$, and $B$ is the bandwidth of the measurement device. The following cell is a simulation that:</p>
+<ul>
+<li>Creates band-limited additive white noise and phase noise</li>
+<li>Simulates a simple sinusoid that has this phase noise and additive noise added on to it</li>
+<li>Simulates a perfect PLL measurement of the phase of the signal using the scipy Hilbert transform method</li>
+<li>Calculates the variance of the measured phase</li>
+<li>Looks at the behaviour of the variance of the measured phase as a function of the bandwidth of the measurement device</li>
+</ul>
+<p>The total variance of the measured phase is given by:</p>
+$$ \sigma_{\phi}^2=\int^B_0 S_{\phi}(f) df = \int^B_0 S_{\epsilon}(f) df + \int^B_0 \frac{2}{A^2}S_{\bar A}(f) df = BS_{\epsilon} + \frac{2B}{A^2}S_{\bar A}$$<p>where the last equality is true for white noise.</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell  jp-mod-noInput ">
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Numerical STD Dev: 0.0031623193477887243
+
+Expected STD Dev: 0.003175148213717455
+
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/PhaseNoise.png' style='width:50.0%'/><figcaption style='text-align:center; font-size:25px;'><b>Figure 3:</b> Measured Phase Noise</figcaption></figure></div>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/PhaseNoiseHist.png' style='width:50.0%'/><figcaption style='text-align:center; font-size:25px;'><b>Figure 4:</b> Error Histogram</figcaption></figure></div>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/PhaseNoiseAmpStd.png' style='width:50.0%'/><figcaption style='text-align:center; font-size:25px;'><b>Figure 5:</b> Phase Noise Standard Deviation vs Signal Amplitude</figcaption></figure></div>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/PhaseNoiseBandStd.png' style='width:50.0%'/><figcaption style='text-align:center; font-size:25px;'><b>Figure 6:</b> Phase Noise Standard Deviation vs Measurement Bandwidth</figcaption></figure></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>This gives an idea of how the weak-light problem can be solved. <strong>However</strong>, it neglects two very important things:</p>
+<ul>
+<li>The signal of interest is likely changing in frequency. If our bandwidth is 1Hz, what happens if our signal changes by 10 Hz?</li>
+<li>This also ignores the dynamics of a PLL. There's more to the optimisation than simply decreasing bandwidth.</li>
+</ul>
+<p>With this in mind, let's go back to weak light.</p>
+
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Weak-Light-Statistics">Weak Light Statistics<a class="anchor-link" href="#Weak-Light-Statistics">&#182;</a></h1><p>Recall from above that the photocurrent generated by the photodetector is given by:</p>
+$$ P_{OPT} = |E_{PD}|^2 = P_{LO} + P_{sig} + 2\sqrt{P_{LO}P_{sig}}cos(\omega_1t+\phi)$$$$ \bar{I} = \bar{I}_{LO} + \bar I_{sig} + 2\sqrt{\bar{I}_{LO}\bar{I}_{sig}}cos(\omega_1t+\phi)$$
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>Let's briefly consider the statistics of light (in a very non-rigorous manner).</p>
+<p>The photon flux $\Phi$ incident on a photodetector is given by:</p>
+$$ \Phi = \frac{P}{hf}$$<p>where $P$ is the power of the light, $h$ is Planck's constant, and $f$ is the frequency of the light. From quantum theory (<strong>Is this actually a derivable result from quantum?</strong>), the number of photons detected by a photodetector follows a Poisson distribution. The <strong>mean</strong> number of photons incident on the photodetector in an observation time interval $T$ is given by:</p>
+$$ \bar{N} = \Phi T = \frac{P}{hf}T$$<p>The <strong>variance</strong> of the number of photons incident on the photodetector in an observation time interval $T$ is given by:</p>
+$$ \sigma_N^2 = \bar{N} = \frac{P}{hf}T$$<p><strong>Note: I don't really like these statistics. As mean would have a unit, while variance has a unit^2. But one explanation is that counts are unitless...</strong></p>
+<p>The mean number of photoelectrons generated by the photodetector with quantum efficiency $\eta$ in an observation time interval $T$ is given by:</p>
+$$ \bar{m}=\eta \bar{n}$$$$ \sigma_m^2 = \eta \bar{n}$$<p>The average photocurrent generated by the photodetector is given by:</p>
+$$ \bar{I} = \frac{q}{T} \bar{m} = \frac{\eta q P}{h f}$$<p>where $q$ is the charge of an electron. The variance of the photocurrent generated by the photodetector is given by:</p>
+$$ \sigma_I^2 = (\frac{q}{T})^2 \sigma_m^2 = \frac{2B \eta q^2 P}{h f}=2 B q \bar{I} $$<p>where $\frac{1}{T}=2B=f_s$. Recall $ \sigma^2=\int^B_0 S(f) df$, which would suggest that,</p>
+$$ S(f) = 2 q \bar{I}$$<p>This is the quantum noise limit of the measured photocurrent, otherwise known as shot noise. A rigorous derivation of would consider the photocurrent as,</p>
+$$ I(t)=q \sum \delta(t-t_i)$$<p>where $t_i$ is a set of poisson random variables. It would then show that the autocorrelation is,</p>
+$$ R_I(\tau)=q \bar{I} \delta(\tau) + \bar{I}^2$$<p>which contains a white noise term, the shot noise, and a DC term related to the average photocurrent I.</p>
+<p>These statistics provide the shot-noise limit for a photodetector, and is directly obtained from the quantum nature of light.</p>
+<h2 id="Brief-Aside-(Shot-Noise-Limited-Measurement)">Brief Aside (Shot Noise Limited Measurement)<a class="anchor-link" href="#Brief-Aside-(Shot-Noise-Limited-Measurement)">&#182;</a></h2><p>The shot noise limit is the best possible measurement that can be made with a photodetector. However, other noise sources will likely trump it. Some noise sources of cosnideration are:</p>
+<ul>
+<li>Amplifier noise</li>
+<li>Thermal (Johnson-Nyquist) noise</li>
+<li>Dark current (photocurrent generated in the absence of light)</li>
+</ul>
+<p>In a direct detection system, we have no control over what the shot noise is since</p>
+$$ \bar{I}_{meas}= \bar{I}_{sig}$$<p>However, for heterodyne detection</p>
+$$ \bar{I} = \bar{I}_{LO} + \bar I_{sig} + 2\sqrt{\bar{I}_{LO}\bar{I}_{sig}}cos(\omega_1t+\phi) \approx \bar{I}_{LO}$$<p>when $I_{LO}&gt;&gt;&gt;I{sig}$ (think milliwatts to sub picowatts). This means that the shot noise limit is given by the local oscillator power, and not the signal power. This is a key advantage of heterodyne detection, as we can simply increase the power of the local oscillator, to make the quantum noise the dominant noise source. For the purposes of weak-light tracking, and this seminar, we will only consider additive shot noise.</p>
+<h2 id="Shot-Noise-Limited-Phase-Measurement">Shot Noise Limited Phase Measurement<a class="anchor-link" href="#Shot-Noise-Limited-Phase-Measurement">&#182;</a></h2><p>We can now finally consider how the additive shot noise will couple in to a phase measurement.</p>
+$$ \bar{I}_{LO} = \frac{\eta q \lambda}{2\pi\hbar c}P_{LO}$$$$ \bar{I}_{sig} = \frac{\eta q \lambda}{2\pi\hbar c}P_{sig}$$$$ S_{SN}(f) \approx 2 q \bar{I}_{LO} = \frac{\eta q^2 \lambda}{\pi \hbar c}P_{LO}$$$$ S_{AN} = \frac{2}{A^2}S_{SN}(f)$$$$ A^2 = 4 \bar{I}_{LO} \bar{I}_{sig} = \frac{\eta^2 q^2 \lambda^2 P_{LO} P_{sig}}{\pi^2 \hbar^2 c^2}$$$$ S_{AN} =2 (\frac{\pi^2 \hbar^2 c^2}{\eta^2 q^2 \lambda^2 P_{LO} P_{sig}})(\frac{\eta q^2 \lambda}{\pi \hbar c}P_{LO}) = \frac{2\pi\hbar c}{\eta\lambda P_{sig}}\hspace{4pt}[\text{rad}^2/\text{Hz}] = \frac{\hbar c}{2\pi\eta\lambda P_{sig}}\hspace{4pt}[\text{cyc}^2/\text{Hz}]$$<p>This analysis provides an interesting problem. The shot noise limit of the measurement on $P_{LO}$, however, the way that shot noise couples into the phase measurement depends inversely on $P_{sig}$. This is essentially the weak-light problem, as the signal power decreases, our phase measurement will see much more additive noise! <strong>Discuss!</strong>.</p>
+<h2 id="Phase-Noise">Phase Noise<a class="anchor-link" href="#Phase-Noise">&#182;</a></h2><p>I've mostly glossed over phase noise, as a big part of the weak-light problem is additive shot noise. To keep it simple for this seminar, we will use</p>
+$$ S_{\phi}(f)=(\frac{\nu}{2\pi f})^2\hspace{4pt}[\text{cyc}^2/\text{Hz}]$$<p>where $\nu$ is the white level of the laser frequency noise in $[\text{Hz}/\sqrt\text{Hz}]$ .</p>
+
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Phase-Locked-Loops">Phase Locked Loops<a class="anchor-link" href="#Phase-Locked-Loops">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell  jp-mod-noInput ">
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/PLL.png' style='width:30.0%'/></figure></div>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
+<p><strong><font size='5'><center>Figure 7:</strong> PLL feedback structure.</p>
+
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/PLL_s.png' style='width:30.0%'/></figure></div>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
+<p><strong><font size='5'><center>Figure 8:</strong> PLL phase model in s-domain. For digital PLLs, the LO is usally a numerically controlled oscillator (NCO).</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>For our purposes, we will keep the PLL model simple and do everything in $f$ domain. The NCO (local oscillator for a digital PLL) has a transfer function</p>
+$$ P(f) = \frac{K}{jf}$$<p>where the division by $jf$ indicates that the controller actuates the frequency of the NCO.</p>
+<p>The open loop gain of the PLL is given by</p>
+$$ G(f) = \frac{K}{jf} F(f) $$<p>The controller I usually opt for is either a proportional-integral or proportional-integral squared controller.</p>
+$$ F(f) = P + \frac{I}{jf}$$<p>for $P$ the proportional gain, and $I$ the integral gain.</p>
+<p>The open-loop transfer function is then,</p>
+$$ G(f) = \frac{K}{jf} (P + \frac{I}{jf}) = \frac{-j K_v P}{f} - \frac{K_v I}{f^2}$$<p>the I-term is usually much smaller than the P-term, and is used to ensure stability of the control loop. When considering the open-loop gain of the transfer function, we will usually only consider the P-term.</p>
+$$ G(f) = \frac{-j K P}{f} = \frac{-j f_{ug}}{f}$$<p>where we have defined the unity gain frequency $f_{ug} = K P$ (the frequency at which $|G_{OL}(f)|=1$). $K$ is the gain of the oscillator, and for our case it will just be $2\pi$. The unity gain frequency provides a metric for the bandwidth of the PLL, as we will soon see.</p>
+
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Propagation-of-phase-noise-and-additive-noise-in-a-PLL-(brief-overview,-just-copy-pasted-from-other-notebook.-Explains-how-additive-noise-enters-PLL)">Propagation of phase noise and additive noise in a PLL (brief overview, just copy-pasted from other notebook. Explains how additive noise enters PLL)<a class="anchor-link" href="#Propagation-of-phase-noise-and-additive-noise-in-a-PLL-(brief-overview,-just-copy-pasted-from-other-notebook.-Explains-how-additive-noise-enters-PLL)">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>It is worthwhile exploring how phase noise and amplitude noise are
+perceived by a PLL. This analysis will be done in the continuous time
+domain, as the results will be analogous to discrete time. We begin by
+considering a noisy signal,
+$$v(t) = A[1+\alpha(t)]\sin(\omega_i t + \theta_i + \bar{\epsilon}(t))$$
+where $\alpha(t)$ are random WSS fractional amplitude oscillations of
+the signal, and $\bar{\epsilon}(t)$ are random WSS fractional phase
+changes. A more useful form of this oscillator is,</p>
+$$ v(t) = A\sin(\omega_i t + \theta_i + \bar{\epsilon}(t)) + \bar{A}(t)$$$$\bar{A}(t) = A\alpha(t)\sin(\omega_i t + \theta_i + \bar{\epsilon}(t))$$<p>
+where $\bar{A}(t)$ is additive noise on the signal,
+centered at the carrier frequency $\omega_i$. For now, we shall ignore
+the random phase fluctuations, and consider how additive noise is
+propagated in the loop (we can safely do this as our final model will be
+a linear one, or consider the phase noise being absorbed by $\theta_i$).</p>
+<p>Using Euler's or sum idenities, $$\begin{aligned}
+    \bar{A}(t) &amp;= A\alpha(t) \sin(\omega_i t) \cos(\theta_i) + \cos(\omega_i t)\sin(\theta_i)\\
+    \bar{A}(t) &amp;= n_c(t)cos(\omega_i t) - n_s(t)sin(\omega_i t)\\
+    n_c(t) &amp;= A\alpha(t) \sin(\theta_i)\\
+    n_s(t) &amp;= -A\alpha(t) \cos(\theta_i)
+\end{aligned}$$</p>
+<p>This is the band passed noise process $\bar{A}(t)$ decomposed into two
+quadrature, and independant components (NOTE: The textbook derivation
+I've found uses Fourier transform, I find this simpler). We now
+introduce the locked NCO, $$v_{NCO}(t) = B\sin(\omega_i t + \theta_o)$$
+The NCO and input are mixed, and lowpass filtered to remove high
+frequency components, providing $$\begin{aligned}
+    v_{error}(t) &amp;= v(t)v_{NCO}(t) = B\sin(\omega_i t + \theta_o)(A\cos(\omega_i t + \theta_i) + n_c(t)cos(\omega_i t) - n_s(t)sin(\omega_i t))\\
+    v_{error,LPF} &amp;= \frac{AB}{2}(\sin(\theta_i - \theta_o) + \frac{n_c(t)}{A}\cos(\theta_o) + \frac{n_s(t)}{A}\sin(\theta_o))
+\end{aligned}$$</p>
+<p>The equivalent noise $n'(t)$ is then defined, $$\begin{aligned}
+    n'(t) &amp;= \frac{n_c(t)}{A}\cos(\theta_o) + \frac{n_s(t)}{A}\sin(\theta_o)\\
+    v_{error,LPF} &amp;= \frac{AB}{2}(\sin(\theta_i - \theta_o) + n'(t))
+\end{aligned}$$</p>
+<p>This final equation is quite important. Essentially, this equivalent
+noise is inserted just after the linear phase detector. To see this,
+consider the non-linear model of the mixer,</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell  jp-mod-noInput ">
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div style='background-color:white; padding:10px; color:black;'><figure style='text-align:center;'><img src='Figs/Additive_NonLin.png' style='width:50.0%'/></figure></div>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
+<p><strong><font size='5'><center>Figure 9:</strong> Non linear phase detector</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>In the linear model, this $\sin(t)$ term becomes unity, and the
+equivalent noise is inserted just after the linear phase detector. We
+must still quantify how $n'(t)$ relates to $\bar{A}(t)$ (further work
+could maybe done to then relate to $\alpha(t)$, but this is not
+necessary for additive shot noise). We know $n(t)$ is zero-mean, and
+hence $n'(t)$ will also be zero mean. Following from this,
+$$\begin{aligned}
+    \text{VAR}(n'(t)) &amp;= E[n'(t)^2] = \sigma_{n'}^2\\
+    n'(t)^2 &amp;= \frac{n_c^2}{A^2}\cos^2(\theta_o) + \frac{n_s^2}{A^2}\sin^2(\theta_o) + \frac{2n_c n_s}{A^2}\cos(\theta_i)\sin(\theta_o)\\
+    E[n_c^2]&amp;=E[n_s^2]=E[n^2]=\text{VAR}(n(t))=\sigma^2_n\\
+    E[n_cn_s] &amp;=0
+\end{aligned}$$ 
+Where the properties of bandpass gaussian noise provide
+convenient statistical relationships.
+$$\text{VAR}(n'(t)) = \frac{\text{VAR}(n(t))}{A^2} = \frac{\sigma_n^2}{A^2} = \sigma_{n'}^2$$</p>
+<p>The autocorrelation is then calculated as, $$\begin{aligned}
+    R_{n'}(\tau) = E[n'(t)n'(t+\tau)] = \frac{E[n_c(t)n_c(t+\tau)]}{A^2}&amp;E[\cos^2\theta_o]+\frac{E[n_s(t)n_s(t+\tau)]}{A^2}E[\sin^2\theta_o]\\
+    E[cos^2]&amp;=E[sin^2]=0.5\\
+    E[n_c(t)n_c(t+\tau)]&amp;=E[n_s(t)n_s(t+\tau)]=R_{nc}(\tau)\\
+    R_{n'}(\tau) &amp;= \frac{R_{nc}(\tau)}{A^2}
+\end{aligned}$$</p>
+<p>The <strong>single sided</strong> spectrum is then,
+$$S_{n'}(f) = \frac{2 S_{nc}(f)}{A^2}$$ 
+where $S_{nc}(f)$ is the Fourier
+transform of $R_{nc}(\tau)$. This spectrum is related to the additive
+noise spectrum $S_n(f)$ by, $$S_{nc}(f) = S_n(f-f_i)$$ where
+$f_i=\omega_i/2\pi$, and the PSD has been shifted to $f_i$.
+I don't fully understand yet how this is derived, but Gardner kinda
+states it. Conceptually, the spectrum of the additive noise is centered
+about the carrier frequency $\omega_i$. The one sided $S_n(f)$ is equal
+to 0 for $f&lt;0$. For white noise, $S_n(f)=N_0 \quad [V^2/Hz]$,
+$$S_{n'}(f) = \frac{2 N_0}{A^2} \quad [rad^2/Hz]$$ 
+where the additive
+noise process is now considered as an angular disturbance.</p>
+
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Phase-locked-loops-continued">Phase locked loops continued<a class="anchor-link" href="#Phase-locked-loops-continued">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>For signal noise $\phi_{sig}(f)$ and additive phase noise $\phi_{AN}(f)$, we can determine the following transfer functions:</p>
+$$ E(f) = \frac{\phi_{error}(f)}{\phi_{signal}(f)}=\frac{1}{1+G_{OL}(f)}$$$$ H(f) = \frac{\phi_{error}(f)}{\phi_{AN}(f)}=\frac{G_{OL}(f)}{1+G_{OL}(f)}$$<p>which model how phase and shot noise are seen at the output of our "imaginary" phase detector. For the perfect measurement, we would expect $\phi_{error}$ to be zero, which means that our local oscillator is perfectly tracking the incoming signal and that our measurement is perfectly $\phi_{sig}$. These transfer functions model how incorrect our measurement will be. To <strong>estimate</strong> the error in the phase detector, due to phase noise and additive noise, we can use the following equations:</p>
+$$ \sigma_{error}^2 = \int^B_0 S_{\phi}(f) |E(f)|^2 df + \int^B_0 S_{AN}(f)|H(f)|^2 df $$<p>For the weak light problem, we have,</p>
+$$ S_{AN} = \frac{\hbar c}{2\pi\eta\lambda P_{sig}}\hspace{4pt}[\text{cyc}^2/\text{Hz}]$$$$ S_{\phi}(f)=(\frac{\nu}{2\pi f})^2\hspace{4pt}[\text{cyc}^2/\text{Hz}]$$<p>We now have all the prerequisite knowledge to optimise a PLL for weak-light tracking!</p>
+<p>Before doing numerical simulations, let's consider the following:</p>
+<ul>
+<li>In the high gain limit $|G_{OL}|&gt;&gt;1$, $\phi_{error}(f) \approx \phi_{AN}(f)$ (shot noise dominates our tracking error) </li>
+<li>In the low gain limit $|G_{OL}|&lt;&lt;1$, $\phi_{error}(f) \approx \phi_{sig}(f)$ (we don't track the signal phase!)</li>
+<li>We can optimise the bandwidth of the PLL by finding the optimum $f_{ug}$, that minimises the tracking error $\sigma_{error}^2$.</li>
+</ul>
 
 </div>
 </div>
