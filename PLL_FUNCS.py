@@ -84,6 +84,28 @@ def PLL(dataIQ, P, I, I2):
         phase_error[i] = phase/(2*np.pi)
     return adjustment, phase_error
 
+@jit(nopython=True)
+def PLL_WL(dataIQ, addData, P, I, I2):
+    ''' Function for Phase Locked Loop (PLL) for IQ data (in complex form, i.e. I+jQ). AddData is additive noise added to error signal. '''
+    N = len(dataIQ)
+    adjustment = np.zeros(N, dtype=np.complex64)
+    phase_error = np.zeros(N)
+    freq_error = np.zeros(N)
+    phaseDiff = np.zeros(N)
+    phase = 0
+    sum_error = 0
+    sum_sum_error = 0  
+    for i in range(N):
+        adjustment[i] = dataIQ[i] * np.exp(-1j*phase)
+        error = np.imag(adjustment[i]) 
+        error += addData[i]# Likely a better way of doing this
+        phaseDiff[i] = error
+        sum_error += error
+        sum_sum_error += sum_error
+        freq_error[i]  = P * error + I * sum_error + I2 * sum_sum_error
+        phase += 2*np.pi*freq_error[i]
+        phase_error[i] = phase/(2*np.pi)
+    return adjustment, phase_error, phaseDiff
 
     
 def fftnoise(f):
