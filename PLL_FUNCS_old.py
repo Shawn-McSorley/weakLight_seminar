@@ -1,3 +1,5 @@
+## This is not mainted anymore.
+
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy import signal
@@ -7,13 +9,18 @@ import os
 from scipy.fft import fft, fftfreq
 from numba import jit
 
-def phaseToIQ(data, tVals, f0, A, unit = 'cycles'):
+def phaseToIQ(data, tVals, f0, A, additiveNoise = 0, unit = 'cycles'):
     ''' Function to convert phase data to IQ data. f0 is the carrier frequency. Default unit for phase data is cycles.'''
     if unit == 'cycles':
         scale = 2*np.pi
     else:
         scale = 1
-    IQ = A * np.exp(1j * (2*np.pi*f0*tVals + scale * data))
+
+    # if additiveNoise is scalar
+    if np.isscalar(additiveNoise):
+        IQ = A * np.exp(1j * (2*np.pi*f0*tVals + scale * data))
+    else:
+        IQ = A * np.exp(1j * (2*np.pi*f0*tVals + scale * data)) + signal.hilbert(additiveNoise)
     return IQ
 
 def PLL_TF(paramPI = {'P':0.2, 'I':0.05, 'I2' : 0.005}, fs = 1):
@@ -106,7 +113,6 @@ def PLL_WL(dataIQ, addData, P, I, I2):
         phase += 2*np.pi*freq_error[i]
         phase_error[i] = phase/(2*np.pi)
     return adjustment, phase_error, phaseDiff
-
     
 def fftnoise(f):
     ''' Function to generate noise with a given frequency spectrum. '''
@@ -117,6 +123,37 @@ def fftnoise(f):
     f[1:Np+1] *= phases
     f[-1:-1-Np:-1] = np.conj(f[1:Np+1])
     return np.fft.ifft(f).real
+
+def get_single_freqs(samples, fs):
+    ''' Function to get the single sided frequency array. Does not include 0 Hz.'''
+    return np.fft.fftfreq(samples, 1/fs)[1:samples//2]
+
+def band_limit_freqs(freqs, psd, min_freq, max_freq, type = 'aggro', spectrum = 'double'):
+    ''' Function to return the band limited noise frequencies. For now just setting to zero. Though will eventually try apply a roll off or something. '''
+    if(type == 'aggro'):
+        # Just sets frequencies outside the band to zero.
+        if(spectrum == 'double'):
+            idx = np.where(np.logical_or(freqs<min_freq, freqs>max_freq))[0]
+            psd[idx] = 0
+            return psd
+    else:
+        return psd
+
+def psdnoise(psd, samples, fs = 1):
+    ''' Function to generate noise with a given single sided power spectral density. See get_single_freqs for freqs.'''
+    # psd = (1/(fs*N))*abs(fft)**2
+    single_fft = np.sqrt(fs*samples/2 * psd) # single sided fft
+    #single_fft = fs*samples/2 * np.sqrt(freqs) # single sided fft
+    double_fft = np.fft.fftfreq(samples, 1/fs) # frequency array for all frequencies
+    double_fft[1:samples//2] = single_fft
+    double_fft[samples//2+1:] = single_fft[::-1]
+    return fftnoise(double_fft)
+
+def white_psd_noise(level, samples, fs = 1):
+    ''' Function to generate white noise with a given power spectral density. '''
+    f = get_single_freqs(samples, fs)
+    psd = np.ones_like(f) * level
+    return psdnoise(psd, samples, fs)
 
 def band_limited_noise(min_freq, max_freq, samples=1024, samplerate=1):
     ''' Function to generate band-limited noise. Parameters: min_freq, max_freq, samples, samplerate. '''
@@ -131,15 +168,33 @@ if __name__ == '__main__':
 
     # Test the delay function
     fs = 10000  # Sampling frequency
-    timeseries = np.sin(2 * np.pi * 0.5 * np.arange(fs) / 100)  # Example sine wave
-    time_delay = 0.01 * np.sin(2 * np.pi * 0.1 * np.arange(fs) / 100)  # Example delay
+    t = 1000
+    N = fs*t
+    # create frequency array
+    f = get_single_freqs(N, fs)
+    psd = np.ones(len(f))/f
+    noise = psdnoise(psd, N, fs)
+    plt.figure()
+    plt.plot(noise)
+    plt.show()
+
+    from scipy.signal import welch
+    f, Pxx = welch(noise, fs, nperseg=1024)
+    plt.figure()
+    plt.plot(f, Pxx)
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.show()
+
+    # timeseries = np.sin(2 * np.pi * 0.5 * np.arange(fs) / 100)  # Example sine wave
+    # time_delay = 0.01 * np.sin(2 * np.pi * 0.1 * np.arange(fs) / 100)  # Example delay
     
 
-    delayed_timeseries = FUNC_DELAY(timeseries, -time_delay, fs)
-    plt.figure()
-    plt.plot(timeseries, label='Original')
-    plt.plot(delayed_timeseries, label='Delayed')
-    plt.show()
+    # delayed_timeseries = FUNC_DELAY(timeseries, -time_delay, fs)
+    # plt.figure()
+    # plt.plot(timeseries, label='Original')
+    # plt.plot(delayed_timeseries, label='Delayed')
+    # plt.show()
     # # Test the PLL TF function
     # P = 2**-8
     # I = 2**-17
